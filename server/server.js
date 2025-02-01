@@ -1,86 +1,75 @@
 const express = require("express");
 const cors = require("cors");
 const port = 8081;
-const bcrypyt = require("bcrypt");
-const User = require("./models/User");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const getusers = require("./getusers");
+const getbyemail = require("./getbyemail");
+const getbyusername = require("./getbyusername");
+const register = require("./register");
+const login = require("./login");
+const authToken = require("./authToken");
+const User = require("./models/User");
+const errorHandler = require("./errorHandler");
+const gettodos = require("./gettodos");
+const changeTodoFinishedState = require("./changetodofinishedstate");
+const validateTodoOwnership = require("./validateTodoOwnership");
+const removeTodo = require("./removeTodo");
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser.json());
+app.use(cookieParser());
 
-app.get("/getusers", async (req, res) => {
-  await User.getAll()
-    .then((users) => res.status(200).json(users))
-    .catch((error) => res.status(500).json(`Failed to fetch users:${error}`));
-});
+app.get("/getusers", getusers);
 
-app.get("/getbyemail", async (req, res) => {
-  const email = req.headers["email"];
-  if (!email)
-    return res.status(400).json({ error: "Email hasn't been provided." });
+app.get("/getbyemail", getbyemail);
 
-  await User.getByEmail(email)
-    .then((user) => res.status(200).json(user))
-    .catch((error) =>
-      res.status(404).json({ error: `User not found:${error}` })
-    );
-});
+app.get("/getbyusername", getbyusername);
 
-app.get("/getbyusername", async (req, res) => {
-  const username = req.headers["username"];
-  if (!username)
-    return res.status(400).json({ error: "Username hasn't been provided." });
+app.post("/register", register);
 
-  await User.getByUsername(username)
-    .then((user) => res.status(200).json(user))
-    .catch((error) =>
-      res.status(404).json({ error: `User not found:${error}` })
-    );
-});
+app.post("/login", login);
 
-app.post("/register", (req, res) => {
-  const { name, surname, email, username, password } = req.body;
-  console.log(name, surname, email, username, password);
-  if (!name || !surname || !email || !username || !password) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
-  bcrypyt.hash(password, 10).then(async (hash) => {
-    await User.create(name, surname, username, email, hash)
-      .then((newUser) => res.status(201).json(newUser))
-      .catch((error) => res.status(500).json(`Failed to create user:${error}`));
-  });
-});
-
-app.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-
+app.get("/user", authToken.validateToken, async (req, res) => {
+  const username = res.username;
   const user = await User.getByUsername(username);
-
-  if (!username)
-    return res.status(400).json({ error: "Username hasn't been provided." });
-  if (!password)
-    return res.status(400).json({ error: "Password hasn't been provided." });
-  if (!user) return res.status(400).json({ error: "User doesn't exist." });
-
-  const db_pass = user.password;
-
-  bcrypyt.compare(password, db_pass).then((match) => {
-    switch (match) {
-      case true:
-        res.json("LOGGED IN");
-        break;
-      case false:
-        res.status(400).json({ error: "Wrong username or password." });
-        break;
-    }
+  if (!user)
+    return res
+      .status(errorHandler.UserNotFound.code)
+      .json({ error: errorHandler.UserNotFound.error });
+  res.json({
+    u_id: user.u_id,
+    name: user.name,
+    surname: user.surname,
+    username: user.username,
+    email: user.email,
   });
 });
+
+app.get("/todos", gettodos);
+
+app.post(
+  "/changeTodoState",
+  authToken.validateToken,
+  validateTodoOwnership,
+  changeTodoFinishedState
+);
+
+app.delete(
+  "/removeTodo",
+  authToken.validateToken,
+  validateTodoOwnership,
+  removeTodo
+);
+app.get("/getNewAccessToken", authToken.getNewAccessToken);
 
 app.get("/", (req, res) => {
   return res.json("Server is ok.");

@@ -30,8 +30,8 @@ export const FormInput = ({
   onInvalid,
 }: FormInputI) => {
   return (
-    <label htmlFor={htmlFor} className="register-form-field-container">
-      <h3 className="register-form-field-title">{label}</h3>
+    <label htmlFor={htmlFor} className="form-field-container">
+      <h3 className="form-field-title">{label}</h3>
       <input
         pattern={pattern}
         minLength={minLength}
@@ -44,7 +44,7 @@ export const FormInput = ({
           e.currentTarget.setCustomValidity("");
           onChange ? onChange(e) : undefined;
         }}
-        className="register-form-field-input"
+        className="form-field-input"
         placeholder={placeholder}
         onInvalid={(e: InvalidEvent<HTMLInputElement>) => {
           if (onInvalid) {

@@ -6,17 +6,22 @@ import { Content } from "./components/Content";
 import { UserBanner } from "./components/UserBanner";
 import axios from "axios";
 import React from "react";
+import { Popup } from "./components/Popup";
+import { PopupProvider } from "./contexts/PopupContext";
 export const App = () => {
   return (
     <div className="app">
-      <SidePanel />
-      <Content>
-        <Outlet />
-        <div className="right">
-          <UserBanner />
-          <div className="right-bottom"></div>
-        </div>
-      </Content>
+      <PopupProvider>
+        <Popup />
+        <SidePanel />
+        <Content>
+          <Outlet />
+          <div className="right">
+            <UserBanner />
+            <div className="right-bottom"></div>
+          </div>
+        </Content>
+      </PopupProvider>
     </div>
   );
 };

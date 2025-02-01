@@ -1,7 +1,10 @@
+import { LoginForm } from "../components/LoginForm";
+import "../styles/register_login.sass";
+
 export const Login = () => {
   return (
-    <div className="login">
-      <h1>Login</h1>
+    <div className="pages login">
+      <LoginForm />
     </div>
   );
 };

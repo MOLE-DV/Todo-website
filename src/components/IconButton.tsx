@@ -1,14 +1,21 @@
-import { Icon } from "./Icon";
+// import { Icon } from "./Icon";
+
+import { ReactNode } from "react";
 
 interface iconButtonI {
-  source?: string;
+  icon?: ReactNode;
   className?: string;
+  onClick?: () => void;
 }
 
-export const IconButton = ({ source, className = "button" }: iconButtonI) => {
+export const IconButton = ({
+  icon,
+  className = "button",
+  onClick,
+}: iconButtonI) => {
   return (
-    <button className={className}>
-      <Icon source={source} />
+    <button className={className} onClick={onClick}>
+      {icon}
     </button>
   );
 };

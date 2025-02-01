@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import Cookies from "js-cookie";
 const serverUrl = "http://localhost:8081";
 
 const Regexs = {
@@ -34,7 +34,14 @@ export const register = async (userData: {
       !Regexs.password.test(userData.password) ||
       !Regexs.email.test(userData.email)
     )
-      throw "Fields need to fit certain requirments.";
+      return "FieldsFormatError";
+
+    if (
+      (await getByUsername({ username: userData.username })) ||
+      (await getUserByEmail({ email: userData.email }))
+    ) {
+      return "UserAlreadyExists";
+    }
 
     const user = await axios.post(`${serverUrl}/register`, userData);
 
@@ -45,6 +52,36 @@ export const register = async (userData: {
   }
 };
 
+export const login = async (userData: {
+  username: string;
+  password: string;
+}) => {
+  try {
+    const status = await axios.post(`${serverUrl}/login`, userData, {
+      withCredentials: true,
+    });
+
+    return status.data;
+  } catch (error) {
+    if (
+      ["UserNotFound", "WrongCredentials"].includes(
+        error.response.data.error.name
+      )
+    ) {
+      return error.response.data.error.name;
+    } else {
+      console.error("There was an error siging in:", error.response.data);
+      throw error;
+    }
+  }
+};
+
+export const logout = () => {
+  Cookies.remove("accessToken");
+  Cookies.remove("refreshToken");
+  window.location.reload();
+};
+
 export const getUserByEmail = async (header: { email: string }) => {
   try {
     if (!header.email) throw "Email field cannot be empty.";
@@ -53,7 +90,7 @@ export const getUserByEmail = async (header: { email: string }) => {
     });
     return user.data;
   } catch (error) {
-    console.error("Couldn't get user by email:", error);
+    console.error("Couldn't get user by email:", error.response.data);
     throw error;
   }
 };
@@ -66,7 +103,59 @@ export const getByUsername = async (header: { username: string }) => {
     });
     return user.data;
   } catch (error) {
-    console.error("Coulnd't get user by username:", error);
+    console.error("Coulnd't get user by username:", error.response.data);
+    throw error;
+  }
+};
+
+export const refreshToken = async () => {
+  try {
+    const newAccessToken = await axios.get(`${serverUrl}/getNewAccessToken`, {
+      withCredentials: true,
+    });
+    return newAccessToken.data;
+  } catch (error) {
+    console.error(
+      "Couldn't generate new access token:",
+      error.response.data.error
+    );
+    throw error;
+  }
+};
+
+const getUserFromToken = async () => {
+  try {
+    const user = await axios.get(`${serverUrl}/user`, {
+      withCredentials: true,
+    });
+    return user.data;
+  } catch (error) {
+    return error.response.data.error.name;
+  }
+};
+
+export const getUser = async () => {
+  try {
+    let res = await getUserFromToken();
+    console.log(res);
+    switch (res) {
+      case "AccessTokenNotProvided":
+        return null;
+      case "TokenExpiredError":
+        const refreshedToken = await refreshToken();
+        Cookies.set("accessToken", refreshedToken);
+        const user = await getUserFromToken();
+        return user;
+      case "UserNotFound":
+        Cookies.remove("accessToken");
+        return null;
+      case "WrongCredentials":
+        return "wrongcredentials";
+      default:
+        return res;
+    }
+  } catch (error) {
+    console.error("Couldn't get user:", error.response.data);
     throw error;
   }
 };

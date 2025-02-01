@@ -1,0 +1,70 @@
+@use './variables'
+.register, .form, .login
+    display: flex
+    flex-direction: column
+    
+.pages.register, .pages.login
+    width: 100%
+    padding: 1rem
+    padding-top: 4rem
+    align-items: center
+
+    .title
+        font-weight: normal
+        letter-spacing: .1rem
+        font-size: 3rem 
+        padding-bottom: .5rem
+        margin-bottom: 1rem
+
+    .form
+        display: flex
+        align-items: center
+        width: 25rem
+        background: white
+        border: 1px solid variables.$purple
+        padding: 2rem
+        border-radius: 10px
+        gap: 1rem
+        .form-field-container
+            width: 100%
+            &:first-child
+                margin-top: 2rem
+
+            .form-field-title
+                color: variables.$dark
+                letter-spacing: .1rem
+            .form-field-input
+                margin-top: .5rem
+                font-size: 1.25rem
+                border: none
+                outline: none
+                padding: 1rem
+                border-radius: 10px
+                width: 100%
+                box-shadow: 0 0 3px 1px variables.$slight_gray inset
+                transition: .1s
+                &:hover, &:focus
+                    scale: 1.05
+                    box-shadow: 0 0 3px 1px variables.$purple inset
+
+
+        .form-submit
+            background: variables.$purple
+            color: white
+            text-transform: uppercase
+            letter-spacing: .5rem
+            transition: .1s
+            margin-top: 2rem
+            width: 100%
+            border-radius: 10px
+            padding: 1rem
+            font-size: 1rem
+            outline: none
+            border: none
+            cursor: pointer
+            &:hover, &:focus
+                scale: 1.05
+
+
+
+            

@@ -1,0 +1,60 @@
+@use '../styles/variables'
+
+.popup
+    display: flex
+    flex-direction: column
+    align-items: center
+    gap: .5rem
+    margin: 1rem
+    z-index: 9999
+    position: absolute
+    left: 0
+    right: 0
+    margin-left: auto
+    margin-right: auto
+
+    width: fit-content
+    height: fit-content
+    text-align: center
+    padding-top: 1rem
+    padding-bottom: 1rem
+    padding-inline: 2rem
+    border-radius: 10px
+    border: 1px solid variables.$purple
+
+    background: white
+    &.visible
+        animation: .5s forwards ease-out slideDown 
+    &.hidden
+        animation: 1s forwards ease-out slideUp 
+    &.none
+        display: none
+
+    .popup-button
+        margin-top: 1rem
+        background: variables.$purple
+        border: none
+        border-radius: 10px
+        padding: .5rem
+        padding-inline: 2rem
+        color: white
+        width: fit-content
+        cursor: pointer
+        transition: .1s
+
+        &:hover
+            scale: 1.05
+
+@keyframes slideDown 
+    0%
+        top: -100%
+    100%
+        top: 0%
+        
+@keyframes slideUp 
+    0%
+        top: 0%
+    100%
+        top: -100%
+
+        

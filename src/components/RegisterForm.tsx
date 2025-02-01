@@ -1,9 +1,16 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import Cookies from "js-cookie";
 import { FormInput } from "./FormInput";
 import React from "react";
 import { getRandomPerson } from "../functions/randomPerson";
-import { getUserByEmail, getByUsername, register } from "../api/userManager";
+import {
+  getUserByEmail,
+  getByUsername,
+  register,
+  login,
+} from "../api/userManager";
 import { useNavigate } from "react-router-dom";
+import { PopupContext } from "../contexts/PopupContext";
 
 interface userDataI {
   name: string;
@@ -16,6 +23,7 @@ interface userDataI {
 export const RegisterForm = () => {
   const [data, setData] = useState<userDataI | null>(null);
   const [placeholders] = useState(getRandomPerson());
+  const { setPopupState } = useContext(PopupContext);
   const navigate = useNavigate();
 
   const Regexs = {
@@ -40,26 +48,38 @@ export const RegisterForm = () => {
     e.preventDefault();
     try {
       if (!data) throw "Failed to register user. Form fields cannot be empty.";
-      const userByEmail = await getUserByEmail({ email: data.email });
-      const userByUsername = await getByUsername({ username: data.username });
-      if (userByEmail || userByUsername) throw "User already exists.";
-      const res: {
-        u_id: string;
-        name: string;
-        surname: string;
-        email: string;
-        username: string;
-        password: string;
-      } = await register(data);
-      console.log(res);
-      navigate(-1);
+      const registerRes = await register(data);
+      switch (registerRes) {
+        case "UserAlreadyExists":
+          setPopupState({
+            hidden: false,
+            title: "User already exists",
+            descritpion: "User with this email or username already exists.",
+          });
+          return;
+        case "FieldsFormatError":
+          setPopupState({
+            hidden: false,
+            title: "Wrong format",
+            descritpion: "Make sure the fields are in correct format.",
+          });
+          return;
+      }
+      const res = await login({
+        username: data.username,
+        password: data.password,
+      });
+      Cookies.set("accessToken", res.accessToken);
+      navigate("/");
+      window.location.reload();
     } catch (error) {
       console.error(`Registration failed: ${error}`);
     }
   };
 
   return (
-    <form className="register-form" onSubmit={submitHandler}>
+    <form className="form" onSubmit={submitHandler}>
+      <h1 className="title">Sign Up</h1>
       <FormInput
         placeholder={placeholders.name}
         type="text"
@@ -132,7 +152,7 @@ export const RegisterForm = () => {
         }
         required
       />
-      <input className="register-form-submit" type="submit" value="Submit" />
+      <input className="form-submit" type="submit" value="Submit" />
     </form>
   );
 };

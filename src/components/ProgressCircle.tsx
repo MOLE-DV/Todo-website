@@ -7,7 +7,7 @@ export const ProgressCircle = ({ percentage }: progressCircleI) => {
     <div
       className="progress-circle"
       style={{
-        background: `conic-gradient(white ${
+        background: `conic-gradient(#8685ef ${
           percentage * 3.6
         }deg, rgba(255, 254, 254, 0) 0deg)`,
       }}

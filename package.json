@@ -4,19 +4,21 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "db": "nodemon ./server/server.js",
+    "db": "nodemon --env-file .env ./server/server.js",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "js-cookie": "^3.0.5",
     "nodemon": "^3.1.9",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@types/js-cookie": "^3.0.6",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react-swc": "^3.5.0",
